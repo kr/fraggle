@@ -133,13 +133,51 @@ module Fraggle
       send(req, &blk)
     end
 
-    def walk(sid, glob, &blk)
+    def walk(rev, glob, offset=nil, limit=nil, &blk)
       req = Request.new
-      req.verb = Request::Verb::WALK
-      req.id   = sid if sid != 0 # wire optimization
-      req.path = glob
+      req.verb   = Request::Verb::WALK
+      req.rev    = rev
+      req.path   = glob
+      req.offset = offset
+      req.limit  = limit
 
-      cancelable(send(req, &blk))
+      cancelable(resend(req, &blk))
+    end
+
+    def resend(req, &blk)
+      wrap = Request.new(req.to_hash)
+
+      if blk
+        wrap.valid(&blk)
+      end
+
+      req.valid do |e|
+        if req.offset
+          req.offset += 1
+        end
+
+        if req.limit
+          req.limit -= 1
+        end
+
+        wrap.emit(:valid, e)
+      end
+
+      req.error do |err|
+        if err.disconnected?
+          resend(req, &blk)
+        else
+          wrap.emit(:error, err)
+        end
+      end
+
+      req.done do |e|
+        wrap.emit(:done, e)
+      end
+
+      send(req, &blk)
+
+      wrap
     end
 
     def watch(glob, &blk)
