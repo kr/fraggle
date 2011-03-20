@@ -165,7 +165,7 @@ module Fraggle
 
       req.error do |err|
         if err.disconnected?
-          resend(req, &blk)
+          send(req, &blk)
         else
           wrap.emit(:error, err)
         end
