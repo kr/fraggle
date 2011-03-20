@@ -141,15 +141,15 @@ module Fraggle
       req.offset = offset
       req.limit  = limit
 
-      cancelable(resend(req, &blk))
+      if blk
+        req.valid(&blk)
+      end
+
+      cancelable(resend(req))
     end
 
-    def resend(req, &blk)
-      wrap = Request.new(req.to_hash)
-
-      if blk
-        wrap.valid(&blk)
-      end
+    def resend(wrap)
+      req = Request.new(wrap.to_hash)
 
       req.valid do |e|
         if req.offset
@@ -175,7 +175,7 @@ module Fraggle
         wrap.emit(:done, e)
       end
 
-      send(req, &blk)
+      send(req)
 
       wrap
     end
