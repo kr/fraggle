@@ -12,7 +12,7 @@ EM.run do
   c.level = Fraggle::Logger::INFO
 
   ents = []
-  req = c.getdir "/doozer" do |e|
+  req = c.getdir(nil, "/doozer") do |e|
     ents << e.path
   end
 

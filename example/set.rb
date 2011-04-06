@@ -15,7 +15,7 @@ EM.run do
     end
   end
 
-  c.set '/hello', 'world', :missing do |e|
+  c.set(0, '/hello', 'world') do |e|
     p e
   end
 end

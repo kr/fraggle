@@ -11,7 +11,7 @@ EM.run do
   c = Fraggle.connect
 
   paths = []
-  req = c.walk "/**" do |e|
+  req = c.walk(nil, "/**") do |e|
     paths << e.path+"="+e.value
   end
 
